@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
 
 const docsRoutes = require('./routes/docsRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -29,6 +30,8 @@ app.get('/health', (_req, res) => {
 app.get('/api/docs/openapi.json', (_req, res) => {
   res.json(openApiSpec);
 });
+
+app.use('/api/docs/swagger', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 app.use('/api/docs', docsRoutes);
 app.use('/api/auth', authRoutes);

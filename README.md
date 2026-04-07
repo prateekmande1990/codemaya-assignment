@@ -98,6 +98,11 @@ LLM_MODEL=llama-3.1-8b-instant
 
 Notes:\n- This project is configured to use Groq only (`GROQ_API_KEY` + `GROQ_MODEL`).\n- If no key is set, use `ALLOW_MOCK_LLM=true` for local testing.
 
+
+### OpenAPI + Swagger
+
+- Raw OpenAPI JSON: `GET /api/docs/openapi.json`
+- Swagger UI: `GET /api/docs/swagger`
 ## API Endpoints + cURL
 
 ### Health
@@ -195,3 +200,4 @@ scripts/
 tests/
   ask.test.js
 ```
+
