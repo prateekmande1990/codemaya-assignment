@@ -57,7 +57,7 @@ async function generateGroundedAnswer({ question, contextDocs }) {
   if (!llmApiKey) {
     if (!allowMockLlm) {
       throw new Error(
-        'No LLM API key configured. Set LLM_API_KEY (or OPENAI_API_KEY / GROQ_API_KEY), or set ALLOW_MOCK_LLM=true for local/testing mode.'
+        'No Groq API key configured. Set GROQ_API_KEY, or set ALLOW_MOCK_LLM=true for local/testing mode.'
       );
     }
     return runMockModel(contextDocs);

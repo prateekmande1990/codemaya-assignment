@@ -10,8 +10,6 @@ function requireEnv(name, fallback = undefined) {
   return value;
 }
 
-const hasGroqKey = Boolean(process.env.GROQ_API_KEY);
-
 module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 5000),
@@ -21,10 +19,9 @@ module.exports = {
   enableInMemoryMongoFallback: process.env.ENABLE_IN_MEMORY_MONGO_FALLBACK === 'true',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  llmApiKey: process.env.LLM_API_KEY || process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY || '',
-  llmModel: process.env.LLM_MODEL || process.env.GROQ_MODEL || 'gpt-4o-mini',
-  llmBaseUrl:
-    process.env.LLM_BASE_URL || process.env.OPENAI_BASE_URL || (hasGroqKey ? 'https://api.groq.com/openai/v1' : undefined),
+  llmApiKey: process.env.GROQ_API_KEY || '',
+  llmModel: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
+  llmBaseUrl: process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1',
   askRateLimitPerMinute: Number(process.env.ASK_RATE_LIMIT_PER_MINUTE || 10),
   allowMockLlm: process.env.ALLOW_MOCK_LLM === 'true',
   requireEnv,

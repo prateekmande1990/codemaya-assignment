@@ -28,7 +28,7 @@ Take-home assignment implementation for CodeMaya.
 - Node.js, Express
 - MongoDB + Mongoose
 - LangChain core (`PromptTemplate`)
-- OpenAI-compatible LLM client (`openai` SDK)
+- OpenAI-compatible LLM client (`openai` SDK)\n- Groq (`llama-3.1-8b-instant`) via Groq OpenAI-compatible endpoint
 - Zod for validation and structured output checks
 - JWT + bcrypt
 - Jest + Supertest
@@ -53,7 +53,7 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-3. Ensure MongoDB is running locally, or use Docker compose.
+3. Set MongoDB Atlas URI and Groq key in `.env`.
 
 4. Seed documents:
 
@@ -76,18 +76,27 @@ See `.env.example`:
 - `PORT`
 - `NODE_ENV`
 - `MONGO_URI`
+- `MONGO_MAX_RETRIES`
+- `MONGO_RETRY_DELAY_MS`
+- `ENABLE_IN_MEMORY_MONGO_FALLBACK`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
-- `LLM_API_KEY`
-- `LLM_MODEL`
-- `LLM_BASE_URL`
+- `GROQ_API_KEY`\n- `GROQ_MODEL`\n- `LLM_BASE_URL`
 - `ALLOW_MOCK_LLM`
 - `ASK_RATE_LIMIT_PER_MINUTE`
 
-### LLM Notes
+### Groq Setup (Current Project Configuration)
 
-- By default this uses OpenAI-compatible chat completion.
-- If no API key is available, you can set `ALLOW_MOCK_LLM=true` for local/testing.
+Use this in `.env`:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.1-8b-instant
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=llama-3.1-8b-instant
+```
+
+Notes:\n- This project is configured to use Groq only (`GROQ_API_KEY` + `GROQ_MODEL`).\n- If no key is set, use `ALLOW_MOCK_LLM=true` for local testing.
 
 ## API Endpoints + cURL
 
@@ -186,3 +195,4 @@ scripts/
 tests/
   ask.test.js
 ```
+
