@@ -44,6 +44,7 @@ const askQuestion = asyncHandler(async (req, res) => {
 
   const latencyMs = Date.now() - startMs;
   logInfo('ask_request', {
+    requestId: req.requestId,
     userId: req.user.id,
     question: question.length > 120 ? `${question.slice(0, 117)}...` : question,
     latencyMs,

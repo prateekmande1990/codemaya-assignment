@@ -5,11 +5,13 @@ const morgan = require('morgan');
 const docsRoutes = require('./routes/docsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const askRoutes = require('./routes/askRoutes');
+const requestContextMiddleware = require('./middleware/requestContextMiddleware');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
 app.use(helmet());
+app.use(requestContextMiddleware);
 app.use(express.json({ limit: '1mb' }));
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms', {

@@ -12,6 +12,7 @@ function errorHandler(err, req, res, _next) {
   const isProd = nodeEnv === 'production';
 
   logError('request_failed', {
+    requestId: req.requestId,
     path: req.originalUrl,
     method: req.method,
     statusCode,
@@ -20,6 +21,7 @@ function errorHandler(err, req, res, _next) {
 
   const response = {
     message: statusCode === 500 ? 'Internal server error' : err.message,
+    requestId: req.requestId,
   };
 
   if (isZodError) {
