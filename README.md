@@ -19,7 +19,7 @@ Take-home assignment implementation for CodeMaya.
 - Per-user rate limiting for `/api/ask` (10/min by default), persisted in MongoDB
 - Structured request logging (`requestId`, `userId`, truncated `question`, `latencyMs`, `confidence`)
 - Centralized error handling with safe production responses
-- Bonus: `GET /api/ask/history` (last N Q&A for authenticated user)
+- Bonus: `GET /api/ask/history` (paginated, default 10 per page)
 - Bonus: Dockerized via `Dockerfile` + `docker-compose.yml`
 - Tests with Jest + Supertest
 - OpenAPI + Swagger docs
@@ -150,10 +150,10 @@ Example response:
 }
 ```
 
-### Ask History (JWT required)
+### Ask History (JWT required, paginated)
 
 ```bash
-curl http://localhost:5000/api/ask/history \
+curl "http://localhost:5000/api/ask/history?page=1&limit=10" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
@@ -163,7 +163,7 @@ curl http://localhost:5000/api/ask/history \
 npm test
 ```
 
-Current test coverage includes `/api/ask` auth, validation, rate limit, and success flows, plus docs endpoints.
+Current test coverage includes `/api/ask` auth, validation, rate limit, and success flows, plus docs and history pagination endpoints.
 
 ## Docker
 
@@ -196,4 +196,5 @@ scripts/
 tests/
   ask.test.js
   docs.test.js
+  history.test.js
 ```

@@ -68,6 +68,15 @@ const openApiSpec = {
           requestId: { type: "string" },
         },
       },
+      PaginationMeta: {
+        type: "object",
+        properties: {
+          page: { type: "integer", example: 1 },
+          limit: { type: "integer", example: 10 },
+          total: { type: "integer", example: 25 },
+          totalPages: { type: "integer", example: 3 },
+        },
+      },
     },
   },
   paths: {
@@ -179,10 +188,37 @@ const openApiSpec = {
     "/api/ask/history": {
       get: {
         tags: ["Q&A"],
-        summary: "Get recent ask history for authenticated user",
+        summary: "Get recent ask history for authenticated user (paginated)",
         security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+          },
+        ],
         responses: {
-          200: { description: "History returned" },
+          200: {
+            description: "History returned",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: { type: "array", items: { type: "object" } },
+                    pagination: { $ref: "#/components/schemas/PaginationMeta" },
+                  },
+                },
+              },
+            },
+          },
           401: {
             description: "Unauthorized",
             content: {

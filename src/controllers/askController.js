@@ -12,6 +12,11 @@ const askSchema = z.object({
   question: z.string().min(3),
 });
 
+const askHistoryQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(askHistoryLimit),
+});
+
 const askQuestion = asyncHandler(async (req, res) => {
   const startMs = Date.now();
   const { question } = askSchema.parse(req.body);
@@ -61,12 +66,25 @@ const askHistory = asyncHandler(async (req, res) => {
     throw createHttpError(StatusCodes.UNAUTHORIZED, 'Unauthorized');
   }
 
-  const history = await AskHistory.find({ userId: req.user.id })
-    .sort({ createdAt: -1 })
-    .limit(askHistoryLimit)
-    .lean();
+  const { page, limit } = askHistoryQuerySchema.parse(req.query);
+  const skip = (page - 1) * limit;
 
-  res.json({ data: history });
+  const [history, total] = await Promise.all([
+    AskHistory.find({ userId: req.user.id }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    AskHistory.countDocuments({ userId: req.user.id }),
+  ]);
+
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  res.json({
+    data: history,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
+  });
 });
 
 module.exports = {
