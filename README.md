@@ -1,35 +1,36 @@
-# Smart Q&A API (Node.js + Express + MongoDB + LLM)
+# Smart Q&A API (Node.js + Express + MongoDB + Groq)
 
 Take-home assignment implementation for CodeMaya.
 
 ## Features
 
-- Clean modular architecture: `routes/`, `controllers/`, `services/`, `models/`, `middleware/`
+- Modular architecture: `routes/`, `controllers/`, `services/`, `models/`, `middleware/`, `config/`
 - Seeded knowledge base (`npm run seed`) with domain-specific documents
 - `GET /api/docs` for document sanity check
-- `POST /api/ask` RAG-style endpoint:
-  - retrieves top documents by keyword scoring
-  - builds prompt via LangChain `PromptTemplate`
-  - returns schema-enforced JSON: `{ answer, sources, confidence }`
-- Context-grounded answers only (explicit fallback when not in docs)
+- `POST /api/ask` RAG pipeline:
+  - keyword-based top-N retrieval
+  - LangChain `PromptTemplate` prompt construction
+  - schema-enforced structured response: `{ answer, sources, confidence }`
+- Strict context grounding (explicit fallback when answer is not in docs)
 - Auth:
   - `POST /api/auth/register`
   - `POST /api/auth/login` (JWT)
-- JWT-protected `/api/ask`
-- Per-user rate limiting for `/api/ask` (10 requests/minute) persisted in MongoDB
-- Structured logging for each ask call: `userId`, truncated `question`, `latencyMs`, `confidence`
-- Global Express error handling (no raw stack trace leakage in production)
-- Bonus: `GET /api/ask/history` (last 10 user Q&A)
-- Bonus: Docker + docker-compose
-- Test: passing Jest/Supertest test for `/api/ask`
+- JWT-protected `/api/ask` and `/api/ask/history`
+- Per-user rate limiting for `/api/ask` (10/min by default), persisted in MongoDB
+- Structured request logging (`requestId`, `userId`, truncated `question`, `latencyMs`, `confidence`)
+- Centralized error handling with safe production responses
+- Bonus: `GET /api/ask/history` (last N Q&A for authenticated user)
+- Bonus: Dockerized via `Dockerfile` + `docker-compose.yml`
+- Tests with Jest + Supertest
+- OpenAPI + Swagger docs
 
 ## Tech Stack
 
 - Node.js, Express
 - MongoDB + Mongoose
 - LangChain core (`PromptTemplate`)
-- OpenAI-compatible LLM client (`openai` SDK)\n- Groq (`llama-3.1-8b-instant`) via Groq OpenAI-compatible endpoint
-- Zod for validation and structured output checks
+- Groq (OpenAI-compatible API) via `openai` SDK
+- Zod validation
 - JWT + bcrypt
 - Jest + Supertest
 
@@ -41,37 +42,37 @@ Take-home assignment implementation for CodeMaya.
 npm install
 ```
 
-2. Copy env template:
+2. Create `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-(Windows PowerShell)
+PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-3. Set MongoDB Atlas URI and Groq key in `.env`.
+3. Fill `.env` values (`MONGO_URI`, `GROQ_API_KEY`, `JWT_SECRET`).
 
-4. Seed documents:
+4. Seed sample docs:
 
 ```bash
 npm run seed
 ```
 
-5. Start app:
+5. Start server:
 
 ```bash
 npm run dev
 ```
 
-Server runs on `http://localhost:5000` by default.
+Default server: `http://localhost:5000`
 
 ## Environment Variables
 
-See `.env.example`:
+See `.env.example` for all variables:
 
 - `PORT`
 - `NODE_ENV`
@@ -81,28 +82,25 @@ See `.env.example`:
 - `ENABLE_IN_MEMORY_MONGO_FALLBACK`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
-- `GROQ_API_KEY`\n- `GROQ_MODEL`\n- `LLM_BASE_URL`
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `LLM_BASE_URL`
 - `ALLOW_MOCK_LLM`
 - `ASK_RATE_LIMIT_PER_MINUTE`
+- `ASK_HISTORY_LIMIT`
 
-### Groq Setup (Current Project Configuration)
-
-Use this in `.env`:
+Groq defaults:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=llama-3.1-8b-instant
 LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_MODEL=llama-3.1-8b-instant
 ```
 
-Notes:\n- This project is configured to use Groq only (`GROQ_API_KEY` + `GROQ_MODEL`).\n- If no key is set, use `ALLOW_MOCK_LLM=true` for local testing.
+## OpenAPI + Swagger
 
-
-### OpenAPI + Swagger
-
-- Raw OpenAPI JSON: `GET /api/docs/openapi.json`
+- OpenAPI JSON: `GET /api/docs/openapi.json`
 - Swagger UI: `GET /api/docs/swagger`
+
 ## API Endpoints + cURL
 
 ### Health
@@ -111,7 +109,7 @@ Notes:\n- This project is configured to use Groq only (`GROQ_API_KEY` + `GROQ_MO
 curl http://localhost:5000/health
 ```
 
-### 1) Register
+### Register
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
@@ -119,7 +117,7 @@ curl -X POST http://localhost:5000/api/auth/register \
   -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
 ```
 
-### 2) Login
+### Login
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
@@ -127,13 +125,13 @@ curl -X POST http://localhost:5000/api/auth/login \
   -d '{"email":"test@example.com","password":"password123"}'
 ```
 
-### 3) List docs
+### List Documents
 
 ```bash
 curl http://localhost:5000/api/docs
 ```
 
-### 4) Ask (JWT required)
+### Ask (JWT required)
 
 ```bash
 curl -X POST http://localhost:5000/api/ask \
@@ -152,7 +150,7 @@ Example response:
 }
 ```
 
-### 5) Ask history (last 10)
+### Ask History (JWT required)
 
 ```bash
 curl http://localhost:5000/api/ask/history \
@@ -165,18 +163,15 @@ curl http://localhost:5000/api/ask/history \
 npm test
 ```
 
-Includes a passing Supertest test for `POST /api/ask`.
+Current test coverage includes `/api/ask` auth, validation, rate limit, and success flows, plus docs endpoints.
 
 ## Docker
-
-1. Create `.env` from `.env.example` and update values.
-2. Run:
 
 ```bash
 docker compose up --build
 ```
 
-3. Seed from app container (optional):
+(Optional) seed from container:
 
 ```bash
 docker compose exec app npm run seed
@@ -192,6 +187,7 @@ src/
   controllers/
   middleware/
   models/
+  prompts/
   routes/
   services/
   utils/
@@ -199,5 +195,5 @@ scripts/
   seed.js
 tests/
   ask.test.js
+  docs.test.js
 ```
-
