@@ -64,7 +64,22 @@ describe('POST /api/ask', () => {
 
     expect(res.statusCode).toBe(429);
     expect(res.headers['retry-after']).toBeDefined();
+    expect(Number(res.headers['retry-after'])).toBeGreaterThanOrEqual(1);
     expect(res.body.message).toContain('Rate limit exceeded');
+  });
+
+  it('returns 500 for invalid rate limit state', async () => {
+    const token = jwt.sign({ sub: '507f1f77bcf86cd799439011', email: 'test@example.com' }, 'test-secret');
+
+    RateLimitWindow.findOneAndUpdate.mockResolvedValue({ count: Number.NaN });
+
+    const res = await request(app)
+      .post('/api/ask')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ question: 'What is the refund policy?' });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toBe('Internal Server Error');
   });
 
   it('returns structured grounded answer with confidence', async () => {
