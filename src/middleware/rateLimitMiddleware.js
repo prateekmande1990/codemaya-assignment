@@ -22,7 +22,7 @@ async function askRateLimitMiddleware(req, res, next) {
   const updated = await RateLimitWindow.findOneAndUpdate(
     { userId, routeKey: ROUTE_KEY, windowStart },
     { $inc: { count: 1 }, $setOnInsert: { userId, routeKey: ROUTE_KEY, windowStart } },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   );
 
   if (!updated || !Number.isFinite(updated.count)) {
@@ -39,3 +39,4 @@ async function askRateLimitMiddleware(req, res, next) {
 }
 
 module.exports = askRateLimitMiddleware;
+
