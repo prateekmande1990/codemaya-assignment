@@ -12,6 +12,11 @@ function authMiddleware(req, res, next) {
 
   try {
     const payload = jwt.verify(token, jwtSecret);
+
+    if (!payload || typeof payload.sub !== 'string' || payload.sub.trim() === '') {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
+    }
+
     req.user = {
       id: payload.sub,
       email: payload.email,

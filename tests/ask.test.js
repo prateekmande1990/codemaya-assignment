@@ -37,6 +37,18 @@ describe('POST /api/ask', () => {
     expect(res.statusCode).toBe(401);
   });
 
+  it('returns 401 for malformed token payload (missing sub)', async () => {
+    const token = jwt.sign({ email: 'test@example.com' }, 'test-secret');
+
+    const res = await request(app)
+      .post('/api/ask')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ question: 'What is the refund policy?' });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.message).toBe('Invalid or expired token');
+  });
+
   it('returns 400 for invalid question payload', async () => {
     const token = jwt.sign({ sub: '507f1f77bcf86cd799439011', email: 'test@example.com' }, 'test-secret');
 
