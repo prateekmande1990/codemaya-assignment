@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { StatusCodes } = require('../utils/httpStatus');
 const { jwtSecret } = require('../config/env');
 
 function authMiddleware(req, res, next) {
@@ -6,7 +7,7 @@ function authMiddleware(req, res, next) {
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Missing or invalid authorization token' });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Missing or invalid authorization token' });
   }
 
   try {
@@ -17,7 +18,7 @@ function authMiddleware(req, res, next) {
     };
     return next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
   }
 }
 

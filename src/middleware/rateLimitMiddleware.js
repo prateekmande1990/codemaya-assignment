@@ -1,4 +1,5 @@
 const RateLimitWindow = require('../models/RateLimitWindow');
+const { StatusCodes } = require('../utils/httpStatus');
 const { askRateLimitPerMinute } = require('../config/env');
 
 function getWindowStart(date) {
@@ -8,7 +9,7 @@ function getWindowStart(date) {
 async function askRateLimitMiddleware(req, res, next) {
   const userId = req.user?.id;
   if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
   }
 
   const now = new Date();
@@ -24,7 +25,7 @@ async function askRateLimitMiddleware(req, res, next) {
   if (updated.count > askRateLimitPerMinute) {
     const retryAfterSeconds = Math.ceil((windowStart.getTime() + 60000 - now.getTime()) / 1000);
     res.setHeader('Retry-After', retryAfterSeconds);
-    return res.status(429).json({ message: 'Rate limit exceeded. Please retry shortly.' });
+    return res.status(StatusCodes.TOO_MANY_REQUESTS).json({ message: 'Rate limit exceeded. Please retry shortly.' });
   }
 
   return next();

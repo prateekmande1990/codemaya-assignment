@@ -1,14 +1,19 @@
 const { ZodError } = require('zod');
 const { nodeEnv } = require('../config/env');
+const { StatusCodes, ReasonPhrases } = require('../utils/httpStatus');
 const { logError } = require('../utils/logger');
 
 function notFoundHandler(req, res) {
-  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+  res.status(StatusCodes.NOT_FOUND).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
 }
 
 function errorHandler(err, req, res, _next) {
   const isZodError = err instanceof ZodError;
-  const statusCode = isZodError ? 400 : err.statusCode || 500;
+  const rawStatusCode = isZodError ? StatusCodes.BAD_REQUEST : err.statusCode;
+  const statusCode =
+    Number.isInteger(rawStatusCode) && rawStatusCode >= 400 && rawStatusCode <= 599
+      ? rawStatusCode
+      : StatusCodes.INTERNAL_SERVER_ERROR;
   const isProd = nodeEnv === 'production';
 
   logError('request_failed', {
@@ -20,7 +25,7 @@ function errorHandler(err, req, res, _next) {
   });
 
   const response = {
-    message: statusCode === 500 ? 'Internal server error' : err.message,
+    message: statusCode === StatusCodes.INTERNAL_SERVER_ERROR ? ReasonPhrases.INTERNAL_SERVER_ERROR : err.message,
     requestId: req.requestId,
   };
 
@@ -31,7 +36,7 @@ function errorHandler(err, req, res, _next) {
     }));
   }
 
-  if (!isProd && statusCode === 500) {
+  if (!isProd && statusCode === StatusCodes.INTERNAL_SERVER_ERROR) {
     response.debug = err.message;
   }
 

@@ -1,6 +1,7 @@
 const { z } = require('zod');
 const asyncHandler = require('../utils/asyncHandler');
 const createHttpError = require('../utils/httpError');
+const { StatusCodes } = require('../utils/httpStatus');
 const { askHistoryLimit } = require('../config/env');
 const { retrieveRelevantDocs } = require('../services/retrievalService');
 const { generateGroundedAnswer } = require('../services/llmService');
@@ -57,7 +58,7 @@ const askQuestion = asyncHandler(async (req, res) => {
 
 const askHistory = asyncHandler(async (req, res) => {
   if (!req.user?.id) {
-    throw createHttpError(401, 'Unauthorized');
+    throw createHttpError(StatusCodes.UNAUTHORIZED, 'Unauthorized');
   }
 
   const history = await AskHistory.find({ userId: req.user.id })

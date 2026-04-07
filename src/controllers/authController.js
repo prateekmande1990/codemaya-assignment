@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
+const { StatusCodes } = require('../utils/httpStatus');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 const createHttpError = require('../utils/httpError');
@@ -25,7 +26,7 @@ const register = asyncHandler(async (req, res) => {
   const input = registerSchema.parse(req.body);
   const existing = await User.findOne({ email: input.email.toLowerCase() });
   if (existing) {
-    throw createHttpError(409, 'Email already registered');
+    throw createHttpError(StatusCodes.CONFLICT, 'Email already registered');
   }
 
   const passwordHash = await bcrypt.hash(input.password, 10);
@@ -35,7 +36,7 @@ const register = asyncHandler(async (req, res) => {
     passwordHash,
   });
 
-  res.status(201).json({
+  res.status(StatusCodes.CREATED).json({
     message: 'User registered successfully',
     user: { id: user._id, name: user.name, email: user.email },
   });
@@ -45,12 +46,12 @@ const login = asyncHandler(async (req, res) => {
   const input = loginSchema.parse(req.body);
   const user = await User.findOne({ email: input.email.toLowerCase() });
   if (!user) {
-    throw createHttpError(401, 'Invalid credentials');
+    throw createHttpError(StatusCodes.UNAUTHORIZED, 'Invalid credentials');
   }
 
   const isValid = await bcrypt.compare(input.password, user.passwordHash);
   if (!isValid) {
-    throw createHttpError(401, 'Invalid credentials');
+    throw createHttpError(StatusCodes.UNAUTHORIZED, 'Invalid credentials');
   }
 
   const token = signToken(user);
