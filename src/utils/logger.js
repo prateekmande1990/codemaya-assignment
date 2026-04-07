@@ -1,6 +1,12 @@
+function shouldLog() {
+  return process.env.NODE_ENV !== "test";
+}
+
 function logInfo(event, payload = {}) {
+  if (!shouldLog()) return;
+
   const entry = {
-    level: 'info',
+    level: "info",
     event,
     timestamp: new Date().toISOString(),
     ...payload,
@@ -9,8 +15,10 @@ function logInfo(event, payload = {}) {
 }
 
 function logError(event, payload = {}) {
+  if (!shouldLog()) return;
+
   const entry = {
-    level: 'error',
+    level: "error",
     event,
     timestamp: new Date().toISOString(),
     ...payload,
