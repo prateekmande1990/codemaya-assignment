@@ -1,6 +1,7 @@
 const { z } = require('zod');
 const asyncHandler = require('../utils/asyncHandler');
 const createHttpError = require('../utils/httpError');
+const { askHistoryLimit } = require('../config/env');
 const { retrieveRelevantDocs } = require('../services/retrievalService');
 const { generateGroundedAnswer } = require('../services/llmService');
 const AskHistory = require('../models/AskHistory');
@@ -61,7 +62,7 @@ const askHistory = asyncHandler(async (req, res) => {
 
   const history = await AskHistory.find({ userId: req.user.id })
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(askHistoryLimit)
     .lean();
 
   res.json({ data: history });

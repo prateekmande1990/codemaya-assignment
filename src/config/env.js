@@ -23,6 +23,7 @@ module.exports = {
   llmModel: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
   llmBaseUrl: process.env.LLM_BASE_URL || 'https://api.groq.com/openai/v1',
   askRateLimitPerMinute: Number(process.env.ASK_RATE_LIMIT_PER_MINUTE || 10),
+  askHistoryLimit: Number(process.env.ASK_HISTORY_LIMIT || 10),
   allowMockLlm: process.env.ALLOW_MOCK_LLM === 'true',
   requireEnv,
 };
