@@ -1,15 +1,16 @@
 const app = require('./app');
 const { connectDb } = require('./config/db');
 const { port } = require('./config/env');
+const { logInfo, logError } = require('./utils/logger');
 
 async function start() {
   try {
     await connectDb();
     app.listen(port, () => {
-      console.log(`Server started on port ${port}`);
+      logInfo('server_started', { port });
     });
   } catch (err) {
-    console.error('Server start failed:', err.message);
+    logError('server_start_failed', { error: err.message });
     process.exit(1);
   }
 }

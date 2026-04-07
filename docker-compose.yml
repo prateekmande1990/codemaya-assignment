@@ -1,0 +1,22 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: codemaya-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  app:
+    build: .
+    container_name: codemaya-app
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    ports:
+      - '5000:5000'
+    command: npm start
+
+volumes:
+  mongo_data:
