@@ -162,7 +162,7 @@ npm test
 
 Includes a passing Supertest test for `POST /api/ask`.
 
-## Docker (Bonus)
+## Docker
 
 1. Create `.env` from `.env.example` and update values.
 2. Run:
@@ -195,4 +195,3 @@ scripts/
 tests/
   ask.test.js
 ```
-
