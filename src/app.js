@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const docsRoutes = require('./routes/docsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const askRoutes = require('./routes/askRoutes');
+const { openApiSpec } = require('./config/openapi');
 const requestContextMiddleware = require('./middleware/requestContextMiddleware');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
@@ -23,6 +24,10 @@ app.use(
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/api/docs/openapi.json', (_req, res) => {
+  res.json(openApiSpec);
 });
 
 app.use('/api/docs', docsRoutes);
