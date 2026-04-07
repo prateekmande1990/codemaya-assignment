@@ -37,6 +37,36 @@ describe('POST /api/ask', () => {
     expect(res.statusCode).toBe(401);
   });
 
+  it('returns 400 for invalid question payload', async () => {
+    const token = jwt.sign({ sub: '507f1f77bcf86cd799439011', email: 'test@example.com' }, 'test-secret');
+
+    RateLimitWindow.findOneAndUpdate.mockResolvedValue({ count: 1 });
+
+    const res = await request(app)
+      .post('/api/ask')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ question: 'hi' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toContain('Too small');
+    expect(Array.isArray(res.body.issues)).toBe(true);
+  });
+
+  it('returns 429 when rate limit is exceeded', async () => {
+    const token = jwt.sign({ sub: '507f1f77bcf86cd799439011', email: 'test@example.com' }, 'test-secret');
+
+    RateLimitWindow.findOneAndUpdate.mockResolvedValue({ count: 11 });
+
+    const res = await request(app)
+      .post('/api/ask')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ question: 'What is the refund policy?' });
+
+    expect(res.statusCode).toBe(429);
+    expect(res.headers['retry-after']).toBeDefined();
+    expect(res.body.message).toContain('Rate limit exceeded');
+  });
+
   it('returns structured grounded answer with confidence', async () => {
     const token = jwt.sign({ sub: '507f1f77bcf86cd799439011', email: 'test@example.com' }, 'test-secret');
 
