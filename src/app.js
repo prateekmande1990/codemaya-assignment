@@ -10,11 +10,13 @@ const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+morgan.token('request-id', (req) => req.requestId || '-');
+
 app.use(helmet());
 app.use(requestContextMiddleware);
 app.use(express.json({ limit: '1mb' }));
 app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms', {
+  morgan(':method :url :status :res[content-length] - :response-time ms reqId=:request-id', {
     skip: () => process.env.NODE_ENV === 'test',
   })
 );
